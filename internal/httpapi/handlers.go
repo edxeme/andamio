@@ -29,9 +29,12 @@ func New(n *node.Node) *Server {
 	return s
 }
 
+// Handler exposes the routes for http.Server or httptest use.
+func (s *Server) Handler() http.Handler { return s.mux }
+
 // ListenAndServe blocks serving the status endpoints.
 func (s *Server) ListenAndServe(addr string) error {
-	return http.ListenAndServe(addr, s.mux)
+	return http.ListenAndServe(addr, s.Handler())
 }
 
 func (s *Server) members(w http.ResponseWriter, _ *http.Request) {

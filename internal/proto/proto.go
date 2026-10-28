@@ -36,6 +36,12 @@ func (s State) String() string {
 	}
 }
 
+// MarshalJSON renders the state as its lowercase name so status
+// endpoints stay readable by humans and curl.
+func (s State) MarshalJSON() ([]byte, error) {
+	return []byte(`"` + s.String() + `"`), nil
+}
+
 // Member is one node's view of a cluster participant. Incarnation numbers
 // order conflicting reports about the same node; higher wins.
 type Member struct {
