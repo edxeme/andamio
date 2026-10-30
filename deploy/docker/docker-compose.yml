@@ -1,0 +1,29 @@
+# Five-node mesh on a single host. n1 bootstraps; everyone else joins
+# through it. Random ports on the loopback would work too, but fixed
+# ports keep `andamioctl members localhost:7371` repeatable.
+services:
+  n1:
+    image: edxeme/andamio:dev
+    command: ["-name", "n1", "-bind", "0.0.0.0", "-port", "7946", "-http", "0.0.0.0:7373"]
+    ports:
+      - "7371:7373"
+  n2:
+    image: edxeme/andamio:dev
+    command: ["-name", "n2", "-bind", "0.0.0.0", "-port", "7946", "-http", "0.0.0.0:7373", "-seed", "n1:7946"]
+    depends_on:
+      - n1
+  n3:
+    image: edxeme/andamio:dev
+    command: ["-name", "n3", "-bind", "0.0.0.0", "-port", "7946", "-http", "0.0.0.0:7373", "-seed", "n1:7946"]
+    depends_on:
+      - n1
+  n4:
+    image: edxeme/andamio:dev
+    command: ["-name", "n4", "-bind", "0.0.0.0", "-port", "7946", "-http", "0.0.0.0:7373", "-seed", "n2:7946"]
+    depends_on:
+      - n2
+  n5:
+    image: edxeme/andamio:dev
+    command: ["-name", "n5", "-bind", "0.0.0.0", "-port", "7946", "-http", "0.0.0.0:7373", "-seed", "n3:7946"]
+    depends_on:
+      - n3
