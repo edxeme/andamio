@@ -1,0 +1,20 @@
+# Headless service so each pod of the StatefulSet gets a stable DNS
+# name (andamio-0.andamio...) usable as a seed address.
+apiVersion: v1
+kind: Service
+metadata:
+  name: andamio
+  labels:
+    app: andamio
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app: andamio
+  ports:
+    - name: gossip
+      protocol: UDP
+      port: 7946
+    - name: status
+      protocol: TCP
+      port: 7373

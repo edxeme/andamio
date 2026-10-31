@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: andamio
+spec:
+  serviceName: andamio
+  replicas: 5
+  selector:
+    matchLabels:
+      app: andamio
+  template:
+    metadata:
+      labels:
+        app: andamio
+    spec:
+      containers:
+        - name: andamio
+          image: edxeme/andamio:dev
+          args:
+            - -bind
+            - 0.0.0.0
+            - -port
+            - "7946"
+            - -http
+            - 0.0.0.0:7373
+            - -name
+            - $(POD_NAME)
+            - -seed
+            - $(SEED)
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # Every pod joins through the first replica. Replica 0 joins
+            # through itself (seed is ignored for the bootstrap node when
+            # it is alone, so pointing it at its own dns name is safe).
+            - name: SEED
+              value: andamio-0.andamio.default.svc.cluster.local:7946
+          ports:
+            - containerPort: 7946
+              protocol: UDP
+              name: gossip
+            - containerPort: 7373
+              protocol: TCP
+              name: status
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 7373
+            initialDelaySeconds: 2
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 32Mi
